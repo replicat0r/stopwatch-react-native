@@ -12,7 +12,9 @@ var StopWatch = React.createClass({
   getInitialState:function(){
     return {
       timeElapsed: null,
-      running:false
+      running:false,
+      startTime: null,
+      laps: []
     };
   },
 
@@ -31,12 +33,22 @@ var StopWatch = React.createClass({
       </View>
 
       <View style={[styles.footer,this.border('blue')]}>
-        <Text>
-          list of laps
-        </Text>
+          {this.laps()}
       </View>
 
     </View>
+  },
+  laps: function(){
+    return this.state.laps.map(function(time,index){
+      return <View style={styles.lap}>
+        <Text style={styles.lapText}>
+          Lap #{index + 1}
+        </Text>
+        <Text style={styles.lapText}>
+          {formatTime(time)}
+        </Text>
+      </View>
+    });
   },
   startStopButton:function (){
     var style = this.state.running ? styles.stopButton : styles.startButton
@@ -57,24 +69,35 @@ var StopWatch = React.createClass({
       this.setState({running: false})
       return
     }
-    var startTime = new Date();
+    this.setState({startTime: new Date()})
     this.interval = setInterval(()=>{
         this.setState({
-          timeElapsed: new Date() - startTime,
+          timeElapsed: new Date() - this.state.startTime,
           running: true
         });
-    },1)
+    },30)
   },
   lapButton:function(){
-    return  <View style={styles.button}>
+    return  <TouchableHighlight
+          style={styles.button}
+          underlayColor="gray"
+          onPress = {this.handleLapPress}
+          >
       <Text>
         Lap
       </Text>
-    </View>
+    </TouchableHighlight>
+  },
+  handleLapPress: function(){
+    var lap = this.state.timeElapsed;
+    this.setState({
+      startTime:new Date(),
+      laps: this.state.laps.concat([lap])
+    })
   },
   border:function(color){
     return{
-      borderColor:color,
+      borderColor:'white',
       borderWidth:4
     }
   }
@@ -118,6 +141,15 @@ var styles = StyleSheet.create({
   },
   stopButton:{
     borderColor:'#cc0000'
+  },
+  lap:{
+    justifyContent: 'space-around',
+    flexDirection: 'row'
+
+  },
+  lapText: {
+    fontSize:30
+
   }
 
 })
